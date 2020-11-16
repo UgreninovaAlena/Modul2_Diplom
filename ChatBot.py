@@ -2,8 +2,11 @@ from pprint import pprint
 from random import randrange
 import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
+from vk_api.upload import FilesOpener
+
 import ForVK as mVK
-from LibAdditionalFunction import get_input_data, working_with_rubbish_dir, create_list_photos_to_send
+from ForDatabase import add_user_in_DataBase, init_session_with_DataBase
+from LibAdditionalFunction import get_input_data, working_with_rubbish_dir
 
 
 class BOT():
@@ -20,7 +23,7 @@ class BOT():
                     'all_person_is_viewed': 'Вау! Ты просмотрели всех возможных кондидатов!\n Заходи ко мне позже, и я поищу для тебя еще :)'
                     }
 
-    token = input('Token: ')
+    print('Бот запущен')
 
     def __init__(self):
         self.vk = vk_api.VkApi(token=self.AOuthData['m_token'])
@@ -33,28 +36,18 @@ class BOT():
         else:
             self.vk.method('messages.send', {'user_id': user_id, 'message': message, 'random_id': randrange(10 ** 7), "attachment": attachment})
 
-    # def create_list_photos_to_send(self, photos):
-    #     general_list = []
-    #
-    #     for photo in photos:
-    #         general_list.append(photo.link_photo)
-    #
-    #     count_undef_photo = 3 - len(photos)
-    #     while count_undef_photo > 0:
-    #         general_list.append('https://sun9-39.userapi.com/ltx03LSdkFMbt7_HcV8kdCxmLpek4Lnc2qqm7w/2Pm8T6WbZ7Y.jpg')
-    #         count_undef_photo = count_undef_photo - 1
-    #
-    #     return general_list
-
     def send_set(self, event_user_id, person):
-        photolist_for_send = create_list_photos_to_send(person.list_photos)
+        attachment = []
+        for photo in person.list_photos:
+            attachment.append(f'photo{person.id}_{str(photo.id)}')
 
-        for x in range(3):
-            self.write_msg(event_user_id, '', photolist_for_send[x - 1])
+        self.write_msg(event_user_id, '', ','.join(attachment))
         self.write_msg(event_user_id, f'{person.first_name} {person.last_name} \n{self.message_dict["for_one_VKPerson"]}')
 
     def chat(self):
         # working_with_rubbish_dir('start')
+        DBsession = init_session_with_DataBase()
+
         for event in self.longpoll.listen():
             if event.type == VkEventType.MESSAGE_NEW:
 
@@ -93,6 +86,7 @@ class BOT():
                             self.write_msg(event.user_id, result.massage)
                             self.status_bot = 'stoped'
                         else:
+                            result = add_user_in_DataBase(self.user, DBsession)
                             VKpersons = mVK.VKperson()
                             result = VKpersons.get_people(self.user, 3, self.AOuthData, self.token)
 
@@ -110,11 +104,6 @@ class BOT():
                                 self.write_msg(event.user_id, self.message_dict['send_set'])
 
                     elif request == "go":
-                        # if self.current_person_index == 0:
-                        #     if self.user.VKperson_list[self.current_person_index].interest == None:
-                        #         self.user.VKperson_list[self.current_person_index].interest = False
-                        #         self.write_msg(event.user_id, self.message_dict['person_missed'])
-                        #                 # 'person_missed': 'Вы не сделали выбор:( Наверняка это нехороший человек! Отмеу его как неинтересного'
                         self.current_person_index = self.current_person_index + 1
                         self.send_set(event.user_id, self.user.VKperson_list[self.current_person_index])
 
@@ -146,7 +135,6 @@ class BOT():
 
                     else:
                         self.write_msg(event.user_id, "Я тебя не понимаю :(\n Попробуй, пожалуйта, еще раз")
-
 
 a = BOT()
 a.chat()

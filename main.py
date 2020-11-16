@@ -11,8 +11,9 @@ from ResultCreation import Result
 
 
 #
-# db.BASE.metadata.create_all(db.engine)
-# session = db.session
+db.BASE.metadata.create_all(db.engine)
+session = db.session
+session.commit()
 # users = session.query(db.Photos).all()
 # print(users)
 
@@ -57,13 +58,6 @@ from ResultCreation import Result
 #         os.mkdir('rubbish')
 
 
-# delite_rubbish_dir()
-# delite_rubbish_dir()
-# w,orking_with_rubbish_dir('start'),
-# VK.autorize()
-#
-#
-# # VK.autorize()
 URL_for_autorize = 'https://oauth.vk.com/authorize'
 ID = 7656145
 param = {
@@ -71,12 +65,8 @@ param = {
     'display': 'popup',
     'scope': 'photos, status',
     'response_type': 'token',
-    'v': 5.89
-}
-url = '?'.join(
-    (URL_for_autorize, urlencode(param))
-)
-ans = requests.get(url)
+    'v': 5.89}
+url = '?'.join((URL_for_autorize, urlencode(param)))
 print(url)
-# #
+
 

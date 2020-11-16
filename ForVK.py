@@ -187,26 +187,26 @@ class Photo():
 class SearchPeoples():
     AOuthData = get_input_data("Data.txt")
 
-    def get_(self):
-        user = User(20547547, "4bce3ab776b2ffe4b82266cce5527ae48468b23aa786614712292b298926a99e3d06548aadc7944ffe681", 22, 33)
-
-        result = user.get_infouser(self.AOuthData)
-        result.print_result()
-        user.FOR_MY_print_elem()
-
-        VKpersons = VKperson()
-        result = VKpersons.get_people(user, 1, self.AOuthData)
-        result.print_result()
-        print(len(user.VKperson_list))
-        for person in user.VKperson_list:
-            person.FOR_MY_print_elem()
-
-        for person in user.VKperson_list:
-            photos = Photo()
-            result = photos.get_photoslink(person)
-            result.print_result()
-
-            for photo in person.list_photos:
-                photo.FOR_MY_print_elem()
-                photo.get_photo()
-
+    # def get_(self):
+    #     user = User(20547547, "4bce3ab776b2ffe4b82266cce5527ae48468b23aa786614712292b298926a99e3d06548aadc7944ffe681", 22, 33)
+    #
+    #     result = user.get_infouser(self.AOuthData)
+    #     result.print_result()
+    #     user.FOR_MY_print_elem()
+    #
+    #     VKpersons = VKperson()
+    #     result = VKpersons.get_people(user, 1, self.AOuthData)
+    #     result.print_result()
+    #     print(len(user.VKperson_list))
+    #     for person in user.VKperson_list:
+    #         person.FOR_MY_print_elem()
+    #
+    #     for person in user.VKperson_list:
+    #         photos = Photo()
+    #         result = photos.get_photoslink(person)
+    #         result.print_result()
+    #
+    #         for photo in person.list_photos:
+    #             photo.FOR_MY_print_elem()
+    #             photo.get_photo()
+    #

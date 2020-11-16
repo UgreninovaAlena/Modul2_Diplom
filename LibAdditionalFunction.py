@@ -2,6 +2,10 @@ import json
 import os
 import shutil
 
+import ForDatabase as db
+import ForVK as vk
+
+
 def find_max_size(photo_size_list):
     photo_size_max = 0
     result_data = {}
@@ -24,8 +28,9 @@ def working_with_rubbish_dir(command):
     else:
         shutil.rmtree('rubbish/')
 
-def create_list_photos_to_send(photos):
+def create_list_undefined_person(person_list):
     general_list = []
+    general_list_1 = []
 
     for photo in photos:
         general_list.append(photo.link_photo)
@@ -37,6 +42,13 @@ def create_list_photos_to_send(photos):
 
     return general_list
 
+def searh_undefined_for_vd_person(user, session):
+    # db.BASE.metadata.create_all(db.engine)
+    # session = db.session
+    list_person_from_bd = session.query(db.DatingUser).all()
+
+    users = session.query(db.Photos).all()
+    print(users)
 
 # class GetlinkForPhotos():
 #     def __init__(self, list_photos_link, VKperson_id):
