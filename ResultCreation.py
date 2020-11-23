@@ -1,12 +1,14 @@
 import datetime
 
 class Result():
-
-    def __init__(self, result, plase, massage):
+    # @get_log_to_file('log.txt')
+    def __init__(self, result, plase, massage, bool_result=0):
         self.time = str(datetime.datetime.now())
         self.error = result
         self.plase = plase
         self.massage = massage
+        self.bool_result = bool_result
+
 
     def print_result(self):
         print(f'[{self.time}]   {self.plase}')

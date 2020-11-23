@@ -58,7 +58,7 @@ class User():
 
         answer = requests.get(url=URL_to_get_userinfo, params=parameters_to_get_userinfo)
         JSONanswer = answer.json()
-        result = catch_error(answer, JSONanswer, 'Отправка запроса для получения информации о пользователе')
+        result = catch_error(answer, JSONanswer, f'Отправка запроса для получения информации о пользователе {self.id}')
         if result.error == 1:
             return result
         list_info = JSONanswer['response'][0]
@@ -85,18 +85,23 @@ class VKperson():
         else:
             self.age = None
         self.interest = None
-
+        self.sex = VKperson_infolist['sex']
         self.list_photos = []
 
     @get_log_to_file('log.txt')
     def get_people(self, user, count_set, AOuthData, token):
         self.URL_to_search = 'https://api.vk.com/method/users.search'
         self.user_token = token
+
+        sex = 1
+        if user.sex == 1:
+            sex = 2
+
         self.parametrs_to_search = {
             'user_ids': AOuthData['app_id'],
             'access_token': self.user_token,
             'has_photo' : True,
-            'sex': int(not(user.sex)),
+            'sex': sex,
             'age_from': user.age_from,
             'age_to': user.age_to,
             'country': user.country_code['id'],
@@ -104,38 +109,40 @@ class VKperson():
             'sort': 0,
             'count': count_set,
             'status': 6,
-            'fields': 'photo_id, country, city, sex',
+            'fields': 'photo_id, country, city, sex, deactivated, is_closed',
+                                   #deactivated = содержит значение deleted или banned.
             'v': 5.89
         }
         answer = requests.get(url=self.URL_to_search, params=self.parametrs_to_search)
         JSONanswer = answer.json()
-        result = catch_error(answer, JSONanswer, 'Отправка запроса для поиска пары')
+
+        result = catch_error(answer, JSONanswer, 'Отправка запроса для поиска персоны')
         if result.error == 1:
             return result
+
         list_info = JSONanswer['response']['items']
-
         for elem in ListIteration(list_info):
-            person = VKperson()
-            person.init_VKperson(elem)
-            user.VKperson_list.append(person)
+            if elem['can_access_closed'] != False:
+                person = VKperson()
+                person.init_VKperson(elem)
+                user.VKperson_list.append(person)
 
-        # for elem in list_info:
-        #     person = VKperson()
-        #     person.init_VKperson(elem)
-        #     user.VKperson_list.append(person)
         return result
 
     def FOR_MY_print_elem(self):
         print(f'[VKperson]ID: {self.id}')
         print(f'{self.first_name} {self.last_name}')
         print(f'age: {self.age}, FLAG[{self.interest}]')
+        print(f'sex: {self.sex}')
         print('__________________________')
 
 
 class Photo():
+
     def init_photo(self, Photos_infolist):
-        self.id = Photos_infolist['id']
         self.owner_id = Photos_infolist['owner_id']
+        # self.id = Photos_infolist['id']-------------------------------------------------------------------------------
+        self.id = f"{str(self.owner_id)}_{Photos_infolist['id']}"
         self.link_photo = Photos_infolist['link']['url']
         self.likes = Photos_infolist['likes']
 
@@ -150,63 +157,35 @@ class Photo():
             'feed_type': 'photo',
             'photo_sizes': 1,
             'count': 1000,
-            'access_token': token,###############################################################
+            'access_token': token,
             'v': 5.89
         }
         parameters_for_photos_get['owner_id'] = VKperson.id
 
         answer = requests.get(url = URL_for_get_photos, params = parameters_for_photos_get)
         JSONanswer = answer.json()
-        result = catch_error(answer, JSONanswer, 'Отправка запроса для получения ссылок для фотографий')
+
+        result = catch_error(answer, JSONanswer, f'Отправка запроса для получения ссылок для фотографий (Персона {VKperson.id})')
         if result.error == 1:
             return result
 
         list_photos_link = JSONanswer['response']['items']
-
         for x in GetlinkForPhotos(list_photos_link, VKperson.id):
             elem_for_phoyolinks_array = Photo()
-            elem_for_phoyolinks_array.init_photo(x)
-            VKperson.list_photos.append(elem_for_phoyolinks_array)
+            if x['link'] !={}:
+                elem_for_phoyolinks_array.init_photo(x)
+                VKperson.list_photos.append(elem_for_phoyolinks_array)
 
         return result
 
-    def get_photo(self):
-        photo_name = os.path.join('rubbish', str(self.id))+'.jpg'
-        with open(photo_name, 'wb') as save_photo:
-            data = requests.get(self.link_photo)
-            save_photo.write(data.content)
-        return photo_name
-
+    # def get_photo(self):
+    #     photo_name = os.path.join('rubbish', str(self.id))+'.jpg'
+    #     with open(photo_name, 'wb') as save_photo:
+    #         data = requests.get(self.link_photo)
+    #         save_photo.write(data.content)
+    #     return photo_name
 
     def FOR_MY_print_elem(self):
         print(f'[Photo]ID: {self.id}, OWNER ID {self.owner_id}  [{self.likes}] likes')
         print(f'{self.link_photo}')
         print('__________________________')
-
-
-class SearchPeoples():
-    AOuthData = get_input_data("Data.txt")
-
-    # def get_(self):
-    #     user = User(20547547, "4bce3ab776b2ffe4b82266cce5527ae48468b23aa786614712292b298926a99e3d06548aadc7944ffe681", 22, 33)
-    #
-    #     result = user.get_infouser(self.AOuthData)
-    #     result.print_result()
-    #     user.FOR_MY_print_elem()
-    #
-    #     VKpersons = VKperson()
-    #     result = VKpersons.get_people(user, 1, self.AOuthData)
-    #     result.print_result()
-    #     print(len(user.VKperson_list))
-    #     for person in user.VKperson_list:
-    #         person.FOR_MY_print_elem()
-    #
-    #     for person in user.VKperson_list:
-    #         photos = Photo()
-    #         result = photos.get_photoslink(person)
-    #         result.print_result()
-    #
-    #         for photo in person.list_photos:
-    #             photo.FOR_MY_print_elem()
-    #             photo.get_photo()
-    #
